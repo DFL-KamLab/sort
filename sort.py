@@ -48,9 +48,11 @@ def iou_batch(bb_test, bb_gt):
   """
   From SORT: Computes IOU between two bboxes in the form [x1,y1,x2,y2]
   """
+  if bb_test.size == 0 or bb_gt.size == 0:
+    return np.zeros((len(bb_test), len(bb_gt)), dtype=float)
   bb_gt = np.expand_dims(bb_gt, 0)
   bb_test = np.expand_dims(bb_test, 1)
-  
+
   xx1 = np.maximum(bb_test[..., 0], bb_gt[..., 0])
   yy1 = np.maximum(bb_test[..., 1], bb_gt[..., 1])
   xx2 = np.minimum(bb_test[..., 2], bb_gt[..., 2])
@@ -58,9 +60,10 @@ def iou_batch(bb_test, bb_gt):
   w = np.maximum(0., xx2 - xx1)
   h = np.maximum(0., yy2 - yy1)
   wh = w * h
-  o = wh / ((bb_test[..., 2] - bb_test[..., 0]) * (bb_test[..., 3] - bb_test[..., 1])                                      
-    + (bb_gt[..., 2] - bb_gt[..., 0]) * (bb_gt[..., 3] - bb_gt[..., 1]) - wh)                                              
-  return(o)  
+  denom = ((bb_test[..., 2] - bb_test[..., 0]) * (bb_test[..., 3] - bb_test[..., 1])
+    + (bb_gt[..., 2] - bb_gt[..., 0]) * (bb_gt[..., 3] - bb_gt[..., 1]) - wh)
+  denom = np.where(denom <= 0, 1e-12, denom)
+  return wh / denom
 
 
 def convert_bbox_to_z(bbox):
@@ -74,7 +77,7 @@ def convert_bbox_to_z(bbox):
   x = bbox[0] + w/2.
   y = bbox[1] + h/2.
   s = w * h    #scale is just area
-  r = w / float(h)
+  r = w / float(h if h != 0 else 1e-12)
   return np.array([x, y, s, r]).reshape((4, 1))
 
 
@@ -83,8 +86,14 @@ def convert_x_to_bbox(x,score=None):
   Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
     [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
   """
-  w = np.sqrt(x[2] * x[3])
-  h = x[2] / w
+  s = float(x[2])
+  r = float(x[3])
+  if s <= 0 or r <= 0:
+    w = 0.0
+    h = 0.0
+  else:
+    w = float(np.sqrt(s * r))
+    h = float(s / (w if w != 0 else 1e-12))
   if(score==None):
     return np.array([x[0]-w/2.,x[1]-h/2.,x[0]+w/2.,x[1]+h/2.]).reshape((1,4))
   else:
