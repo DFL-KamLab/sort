@@ -86,6 +86,7 @@ def convert_x_to_bbox(x,score=None):
   Takes a bounding box in the centre form [x,y,s,r] and returns it in the form
     [x1,y1,x2,y2] where x1,y1 is the top left and x2,y2 is the bottom right
   """
+  x = x.flatten()  # filterpy stores state as (n,1); flatten so x[i] is a scalar (NumPy 2.0+)
   s = float(x[2])
   r = float(x[3])
   if s <= 0 or r <= 0:

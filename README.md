@@ -1,10 +1,24 @@
-SORT
-=====
+SORT — DFL-KamLab Fork
+======================
+
+> **This is a fork of [abewley/sort](https://github.com/abewley/sort) maintained by
+> [DFL-KamLab](https://github.com/DFL-KamLab) for use with
+> [pycasa](https://github.com/DFL-KamLab/pycasa).**
+>
+> Changes relative to the original:
+> - **NumPy 2.0 compatibility** — `convert_x_to_bbox` now flattens the Kalman state
+>   vector before scalar extraction, fixing a `TypeError` with filterpy on NumPy ≥ 2.0.
+> - **Empty-detection guard in `iou_batch`** — returns a zero matrix instead of
+>   crashing when either detection or tracker array is empty.
+> - **Division-by-zero guard in `convert_bbox_to_z`** — protects against zero-height
+>   bounding boxes.
+
+---
 
 A simple online and realtime tracking algorithm for 2D multiple object tracking in video sequences.
 See an example [video here](https://alex.bewley.ai/misc/SORT-MOT17-06-FRCNN.webm).
 
-By Alex Bewley  
+By Alex Bewley
 
 ### Introduction
 
